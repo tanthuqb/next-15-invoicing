@@ -5,5 +5,6 @@ export const Invoices = pgTable('invoices', {
   createTs: timestamp('createTs').notNull().defaultNow(),
   value: integer('value').notNull(),
   description: text('description').notNull(),
+  userId: text('userId').notNull(),
   status: statusEnum('status').notNull()
 })

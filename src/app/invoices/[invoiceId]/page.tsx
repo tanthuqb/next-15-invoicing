@@ -2,16 +2,26 @@ import { Badge } from "@/components/ui/badge";
 import { db } from "@/db";
 import { Invoices } from "@/db/schema";
 import { cn } from "@/lib/utils";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function InvoicePage({ params }: { params: { invoiceId: string } }) {
+  const { userId } = await auth();
+  if (!userId) return;
   const invoiceId = parseInt(params.invoiceId, 10);
   if (isNaN(invoiceId)) {
     throw new Error("invalid Invoice Id");
-
   }
-  const [result] = await db.select().from(Invoices).where(eq(Invoices.id, invoiceId)).limit(1);
+
+  const [result] = await db.select()
+    .from(Invoices)
+    .where(
+      and(
+        eq(Invoices.id, invoiceId),
+        eq(Invoices.userId, userId)
+      ))
+    .limit(1);
   if (!result) {
     notFound();
   }
