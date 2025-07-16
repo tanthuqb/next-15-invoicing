@@ -1,4 +1,3 @@
-
 'use client'
 
 import { Button } from '@/components/ui/button'
@@ -6,6 +5,7 @@ import * as Clerk from '@clerk/elements/common'
 import * as SignIn from '@clerk/elements/sign-in'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic';
 
 export default function SignInPage() {
   return (

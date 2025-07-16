@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import Container from '@/components/container';
 import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
+export const dynamic = 'force-dynamic';
 export default async function DashBoard() {
   const { userId } = await auth();
   if (!userId) return;

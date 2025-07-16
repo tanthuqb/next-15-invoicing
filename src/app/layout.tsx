@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 
-import {
-  ClerkProvider
-} from '@clerk/nextjs'
 import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import ConditionalClerkProvider from "@/components/conditional-clerk-provider";
 
 declare global {
   interface Window {
-    chatwootSDK: any;
+    chatwootSDK: unknown;
   }
 }
 
@@ -60,7 +58,7 @@ export default function RootLayout({
         />
 
       </head>
-      <ClerkProvider>
+      <ConditionalClerkProvider>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen grid grid-rows-[auto_1fr_auto]`}
         >
@@ -69,7 +67,7 @@ export default function RootLayout({
           <Footer />
 
         </body>
-      </ClerkProvider>
+      </ConditionalClerkProvider>
     </html>
 
   );

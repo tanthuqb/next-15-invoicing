@@ -6,10 +6,13 @@ import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 
-export default async function InvoicePage({ params }: { params: { invoiceId: string } }) {
+export const dynamic = 'force-dynamic';
+
+export default async function InvoicePage({ params }: { params: Promise<{ invoiceId: string }> }) {
   const { userId } = await auth();
   if (!userId) return;
-  const invoiceId = parseInt(params.invoiceId, 10);
+  const { invoiceId: invoiceIdParam } = await params;
+  const invoiceId = parseInt(invoiceIdParam, 10);
   if (isNaN(invoiceId)) {
     throw new Error("invalid Invoice Id");
   }

@@ -1,4 +1,6 @@
 
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   return (
     <main className="flex flex-col justify-center  h-screen text-center max-w-5xl mx-auto">
