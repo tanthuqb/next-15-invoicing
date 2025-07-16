@@ -8,6 +8,12 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
+declare global {
+  interface Window {
+    chatwootSDK: any;
+  }
+}
+
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -32,6 +38,28 @@ export default function RootLayout({
   return (
 
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+        (function(d,t) {
+          var BASE_URL="https://app.chatwoot.com";
+          var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+          g.src=BASE_URL+"/packs/js/sdk.js";
+          g.async = true;
+          s.parentNode.insertBefore(g,s);
+          g.onload=function(){
+            window.chatwootSDK.run({
+              websiteToken: 'btvrt17stabSmX2srDkGWKpU',
+              baseUrl: BASE_URL
+            })
+          }
+        })(document,"script");
+      `,
+          }}
+        />
+
+      </head>
       <ClerkProvider>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen grid grid-rows-[auto_1fr_auto]`}
