@@ -27,16 +27,21 @@ export default async function DashBoard() {
   return (
     <main className="h-full">
       <Container>
-        <div className="flex justify-between mb-6">
-          <h1 className="text-3xl  p-4 font-bold">Invoices</h1>
-          <p>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl p-4 font-bold">Invoices</h1>
+          <div className="flex gap-4">
+            <Button className="inline-flex gap-2" variant={"outline"} asChild>
+              <Link href="/checkout">
+                Checkout
+              </Link>
+            </Button>
             <Button className="inline-flex gap-2" variant={"ghost"} asChild>
               <Link href="/invoices/new">
                 <CirclePlus className="h-4 w-4" />
                 Create Invoice
               </Link>
             </Button>
-          </p>
+          </div>
         </div>
 
         <Table>

@@ -1,15 +1,11 @@
+"use client";
+
 import React from 'react'
-import {
-  SignedOut,
-  SignInButton,
-  SignedIn,
-  UserButton
-} from '@clerk/nextjs'
+import { Show, SignInButton, UserButton } from '@clerk/nextjs';
 import Container from '@/components/container';
 import Link from 'next/link';
 const Header = () => {
   return (
-
     <header className='mt-8 mb-12'>
       <Container>
         <div className='flex justify-between gap-4 items-center'>
@@ -18,17 +14,16 @@ const Header = () => {
               Invoicipedia
             </p>
           </Link>
-          <SignedOut>
+          <Show when="signed-out">
             <SignInButton />
-          </SignedOut>
-          <SignedIn>
+          </Show>
+          <Show when="signed-in">
             <UserButton />
-          </SignedIn>
+          </Show>
         </div>
       </Container>
     </header>
-
-  )
+  );
 }
 
 export default Header

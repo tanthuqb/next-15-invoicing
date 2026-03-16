@@ -8,10 +8,5 @@ export default function ConditionalClerkProvider({
 }: {
   children: ReactNode;
 }) {
-  // Only render ClerkProvider on the client side to avoid build errors
-  if (typeof window === "undefined") {
-    return <>{children}</>;
-  }
-
   return <ClerkProvider>{children}</ClerkProvider>;
 }

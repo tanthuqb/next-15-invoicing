@@ -30,19 +30,19 @@ export default function Page() {
       <Form action={createAction} onSubmit={handleSubmit} className="grid gap-4 max-w-sm">
         <div>
           <Label htmlFor="name" className="block font-semibold mb-2 text-sm">Billing Name</Label>
-          <Input id="name" name="name" type="text"></Input>
+          <Input id="name" name="name" type="text" required></Input>
         </div>
         <div>
           <Label htmlFor="email" className="block font-semibold mb-2 text-sm">Billing Email</Label>
-          <Input id="email" name="email" type="email"></Input>
+          <Input id="email" name="email" type="email" required></Input>
         </div>
         <div>
           <Label htmlFor="value" className="block font-semibold mb-2 text-sm">Value</Label>
-          <Input id="value" name="value" type="text"></Input>
+          <Input id="value" name="value" type="number" step="0.01" required></Input>
         </div>
         <div>
           <Label htmlFor="description" className="block font-semibold mb-2 text-sm">Description</Label>
-          <Textarea id="description" name="description"></Textarea>
+          <Textarea id="description" name="description" required></Textarea>
         </div>
         <div>
           <SubmitButton />
