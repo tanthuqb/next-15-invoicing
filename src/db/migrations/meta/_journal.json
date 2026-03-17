@@ -15,6 +15,13 @@
       "when": 1730033632200,
       "tag": "0001_black_anthem",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773742896703,
+      "tag": "0002_absurd_orphan",
+      "breakpoints": true
     }
   ]
 }

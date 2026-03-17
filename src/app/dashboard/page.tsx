@@ -35,6 +35,11 @@ export default async function DashBoard() {
                 Checkout
               </Link>
             </Button>
+            <Button className="inline-flex gap-2" variant={"outline"} asChild>
+              <Link href="/dashboard/products">
+                Add Product
+              </Link>
+            </Button>
             <Button className="inline-flex gap-2" variant={"ghost"} asChild>
               <Link href="/invoices/new">
                 <CirclePlus className="h-4 w-4" />

@@ -1,8 +1,15 @@
 import { stripe } from "@/lib/stripe";
+import { auth } from "@clerk/nextjs/server";
 
 import { NextResponse , NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
   let lookup_key: string;
 
   const contentType = req.headers.get("content-type") || "";
@@ -34,6 +41,9 @@ export async function POST(req: NextRequest) {
     ],
     mode: 'subscription',
     success_url: `${req.headers.get("origin") || "http://localhost:3000"}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    metadata: {
+      userId,
+    },
   });
 
   return NextResponse.redirect(session.url!, { status: 303 });
