@@ -28,65 +28,65 @@ const ProductDisplay = () => (
       {/* Starter Plan */}
       <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-xl border border-gray-100 transition-all hover:shadow-2xl flex flex-col justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Starter</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Starter Plan</h3>
           <div className="my-4">
-            <span className="text-4xl font-extrabold text-gray-900">$20</span>
+            <span className="text-4xl font-extrabold text-gray-900">$9</span>
             <span className="text-gray-500 font-medium">/mo</span>
           </div>
-          <p className="mt-4 text-gray-500 text-sm mb-8">Perfect for individuals getting started with premium features.</p>
+          <p className="mt-4 text-gray-500 text-sm mb-8">For freelancers and individuals. Up to 25 invoices per month, one user, and standard email support.</p>
         </div>
         <form action="/api/webhook/stripe/session/checkout" method="POST">
-          <input type="hidden" name="lookup_key" value="PRICE_LOOKUP_KEY_STARTER_PLAN" />
-          <button 
+          <input type="hidden" name="lookup_key" value="starter_plan" />
+          <button
             type="submit"
             className="w-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-semibold py-4 px-6 rounded-2xl transition-all duration-200"
           >
-            Subscribe Starter
+            Subscribe to Starter
           </button>
         </form>
       </div>
 
-      {/* VIP Plan */}
+      {/* Pro Plan */}
       <div className="bg-indigo-600 p-8 sm:p-10 rounded-3xl shadow-2xl border border-indigo-500 transition-all hover:-translate-y-2 flex flex-col justify-between relative transform scale-105">
         <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           <span className="bg-linear-to-r from-pink-500 to-amber-500 text-white text-xs font-bold uppercase tracking-widest py-1 px-3 rounded-full shadow-lg">Most Popular</span>
         </div>
         <div>
-          <h3 className="text-2xl font-bold text-white mb-2">VIP</h3>
+          <h3 className="text-2xl font-bold text-white mb-2">Pro Plan</h3>
           <div className="my-4">
-            <span className="text-4xl font-extrabold text-white">$40</span>
+            <span className="text-4xl font-extrabold text-white">$29</span>
             <span className="text-indigo-200 font-medium">/mo</span>
           </div>
-          <p className="mt-4 text-indigo-100 text-sm mb-8">Advanced features for growing businesses.</p>
+          <p className="mt-4 text-indigo-100 text-sm mb-8">For small teams and growing businesses. Unlimited invoices, up to 5 team members, payment links, and priority support.</p>
         </div>
         <form action="/api/webhook/stripe/session/checkout" method="POST">
-          <input type="hidden" name="lookup_key" value="PRICE_LOOKUP_KEY_VIP_PLAN" />
-          <button 
+          <input type="hidden" name="lookup_key" value="pro_plan" />
+          <button
             type="submit"
             className="w-full bg-white text-indigo-600 hover:bg-gray-50 font-bold py-4 px-6 rounded-2xl shadow-lg transition-all duration-200"
           >
-            Subscribe VIP
+            Subscribe to Pro
           </button>
         </form>
       </div>
 
-      {/* Super VIP Plan */}
+      {/* Enterprise Plan */}
       <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-xl border border-gray-100 transition-all hover:shadow-2xl flex flex-col justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Super VIP</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Enterprise</h3>
           <div className="my-4">
-            <span className="text-4xl font-extrabold text-gray-900">$60</span>
+            <span className="text-4xl font-extrabold text-gray-900">$99</span>
             <span className="text-gray-500 font-medium">/mo</span>
           </div>
-          <p className="mt-4 text-gray-500 text-sm mb-8">Maximum power and priority support for pros.</p>
+          <p className="mt-4 text-gray-500 text-sm mb-8">For large organizations. Unlimited invoices and team members, custom integrations, a dedicated account manager, and SLA-backed support.</p>
         </div>
         <form action="/api/webhook/stripe/session/checkout" method="POST">
-          <input type="hidden" name="lookup_key" value="PRICE_LOOKUP_KEY_SUPER_VIP_PLAN" />
-          <button 
+          <input type="hidden" name="lookup_key" value="enterprise_plan" />
+          <button
             type="submit"
             className="w-full bg-gray-900 text-white hover:bg-gray-800 font-semibold py-4 px-6 rounded-2xl transition-all duration-200"
           >
-            Subscribe Super VIP
+            Subscribe to Enterprise
           </button>
         </form>
       </div>
@@ -113,7 +113,7 @@ const SuccessDisplay = ({ sessionId }: { sessionId: string }) => {
         
         <h3 className="text-2xl font-bold text-gray-900 mb-2">Subscription Successful!</h3>
         <p className="text-gray-500 mb-8 border-b border-gray-100 pb-8 text-sm">
-          Welcome aboard. Your Starter Plan is now active and ready to use.
+          Welcome aboard. Your subscription is now active and ready to use.
         </p>
         
         <form action="/api/webhook/stripe/session/portal" method="POST">
@@ -155,10 +155,10 @@ const Message = ({ message }: { message: string }) => (
 );
 
 export default function CheckoutPage() {
-  let [message, setMessage] = useState('');
-  let [success, setSuccess] = useState(false);
-  let [sessionId, setSessionId] = useState('');
-  let [isMounted, setIsMounted] = useState(false);
+  const [message, setMessage] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [sessionId, setSessionId] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);

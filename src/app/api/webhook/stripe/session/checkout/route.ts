@@ -1,4 +1,5 @@
 import { stripe } from "@/lib/stripe";
+import { getOrCreateStripeCustomer } from "@/lib/stripe-customer";
 import { auth } from "@clerk/nextjs/server";
 
 import { NextResponse , NextRequest } from "next/server";
@@ -31,7 +32,13 @@ export async function POST(req: NextRequest) {
     return new NextResponse(`Error: No price found for lookup key "${lookup_key}". Please ensure you have created this lookup key in your Stripe dashboard.`, { status: 400 });
   }
 
+  // Reuse one Stripe Customer per user so subscriptions and one-off purchases
+  // land on the same customer record (and the billing portal always resolves).
+  const customer = await getOrCreateStripeCustomer(userId);
+
   const session = await stripe.checkout.sessions.create({
+    customer,
+    locale: 'en',
     billing_address_collection: 'auto',
     line_items: [
       {
