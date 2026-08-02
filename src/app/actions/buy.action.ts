@@ -41,6 +41,7 @@ export async function buyProductAction(formData: FormData) {
     metadata: {
       userId,
     },
+    locale: 'en',
   });
 
   if (session.url) {

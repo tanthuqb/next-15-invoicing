@@ -37,7 +37,7 @@ export default async function DashBoard() {
             </Button>
             <Button className="inline-flex gap-2" variant={"outline"} asChild>
               <Link href="/dashboard/products">
-                Add Product
+                 Products 
               </Link>
             </Button>
             <Button className="inline-flex gap-2" variant={"ghost"} asChild>
