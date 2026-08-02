@@ -42,3 +42,11 @@ next-env.d.ts
 
 # supabase CLI local state
 /supabase/.temp/
+
+# env files (added by vercel link) — keep the template tracked
+.env*
+!.env.example
+
+# AI agent tooling caches
+/.agents/
+skills-lock.json

@@ -1,6 +1,8 @@
-# 🚀 Next.js 15 Invoicing Application
+# 🚀 Next.js Invoicing Application
 
-A professional, full-stack invoicing application built with the latest **Next.js 15** and **React 19**. This project features a robust dashboard, invoice management, secure authentication, and seamless Stripe payment integration.
+A professional, full-stack invoicing application built with **Next.js 16** and **React 19**. This project features a dashboard, invoice management, product catalog, secure authentication, and seamless Stripe payment integration.
+
+**Live demo:** [https://next-15-invoicing.vercel.app](https://next-15-invoicing.vercel.app)
 
 ---
 
@@ -8,16 +10,18 @@ A professional, full-stack invoicing application built with the latest **Next.js
 
 - **📊 Dashboard:** Overview of your invoices and recent activity.
 - **📄 Invoice Management:** Create and manage invoices with ease.
-- **💳 Stripe Payments:** Secure payment processing with Stripe Checkout.
+- **🛍️ Products:** Create products synced to Stripe (Product + Price objects).
+- **💳 Stripe Payments:** Secure payment processing with Stripe Checkout, plus the customer Billing Portal.
+- **🔔 Stripe Webhooks:** Signature-verified webhook handling for `checkout.session.completed`.
 - **🔐 Authentication:** User authentication and management powered by [Clerk](https://clerk.com/).
 - **🗄️ Database:** Type-safe database interactions with [Drizzle ORM](https://orm.drizzle.team/) and PostgreSQL.
-- **🎨 Modern UI:** A beautiful and responsive interface built with [Tailwind CSS 4](https://tailwindcss.com/) and [Radix UI](https://www.radix-ui.com/).
+- **🎨 Modern UI:** A responsive interface built with [Tailwind CSS 4](https://tailwindcss.com/) and [Radix UI](https://www.radix-ui.com/).
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Framework:** [Next.js 15+](https://nextjs.org/) (App Router)
+- **Framework:** [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
 - **Styling:** [Tailwind CSS 4](https://tailwindcss.com/)
 - **Components:** [Shadcn/UI](https://ui.shadcn.com/) / [Radix UI](https://www.radix-ui.com/)
@@ -25,6 +29,7 @@ A professional, full-stack invoicing application built with the latest **Next.js
 - **ORM:** [Drizzle ORM](https://orm.drizzle.team/)
 - **Database:** [PostgreSQL](https://www.postgresql.org/) (via [Supabase](https://supabase.com/), with Clerk third-party auth + RLS)
 - **Payments:** [Stripe](https://stripe.com/)
+- **Hosting:** [Vercel](https://vercel.com/)
 
 ---
 
@@ -32,18 +37,17 @@ A professional, full-stack invoicing application built with the latest **Next.js
 
 ### Prerequisites
 
-Before you begin, ensure you have the following installed:
-
-- [Node.js 18+](https://nodejs.org/)
-- [npm](https://www.npmjs.com/), [yarn](https://yarnpkg.com/), [pnpm](https://pnpm.io/), or [bun](https://bun.sh/)
+- [Node.js 22+](https://nodejs.org/)
+- [Stripe CLI](https://docs.stripe.com/stripe-cli) (for local webhook testing)
+- Accounts: [Clerk](https://clerk.com/), [Supabase](https://supabase.com/), [Stripe](https://stripe.com/)
 
 ### Installation
 
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/my-invoicing-app.git
-   cd my-invoicing-app
+   git clone https://github.com/tanthuqb/next-15-invoicing.git
+   cd next-15-invoicing
    ```
 
 2. **Install dependencies:**
@@ -53,27 +57,36 @@ Before you begin, ensure you have the following installed:
    ```
 
 3. **Set up Environment Variables:**
-   Create a `.env.local` file in the root directory and add your credentials (see [.env.example](.env.example) for reference):
+   Copy [.env.example](.env.example) to `.env.local` and fill in your credentials:
 
    ```env
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
-   CLERK_SECRET_KEY=...
-   NEXT_PUBLIC_SUPABASE_URL=...
-   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
-   DATABASE_URL=...
-   STRIPE_SECRET_KEY=...
-   STRIPE_WEBHOOK_SECRET=...
+   # Clerk
+   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+   CLERK_SECRET_KEY=sk_test_...
+   NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+   NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+   NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashboard
+   NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashboard
+
+   # Supabase
+   NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+   DATABASE_URL=postgresql://...
+
+   # Stripe
+   STRIPE_SECRET_KEY=sk_test_...
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+   STRIPE_WEBHOOK_SECRET=whsec_...   # see "Stripe Webhooks" below
    ```
 
 4. **Initialize the Database:**
+
    ```bash
    npm run generate
    npm run migrate
    ```
 
 ### 🚀 Development
-
-Start the development server:
 
 ```bash
 npm run dev
@@ -83,28 +96,79 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ---
 
+## 🔔 Stripe Webhooks
+
+The webhook handler lives at `/api/webhook/stripe`. It is publicly reachable (excluded from Clerk auth in `src/proxy.ts`) and protects itself by verifying the Stripe signature with `STRIPE_WEBHOOK_SECRET`.
+
+The local and production secrets are **different** — never mix them up:
+
+### Local development
+
+Stripe cannot reach `localhost`, so forward events with the Stripe CLI:
+
+```bash
+stripe listen --forward-to localhost:3000/api/webhook/stripe
+```
+
+The CLI prints a `whsec_...` secret — put it in `STRIPE_WEBHOOK_SECRET` in `.env.local`, then test with:
+
+```bash
+stripe trigger checkout.session.completed
+```
+
+> The CLI's test fixture has no `metadata.userId`, so this specific event returns 400 by design. Real checkouts initiated by the app always attach it.
+
+### Production
+
+1. Stripe Dashboard → **Developers → Webhooks → Add endpoint**
+2. URL: `https://next-15-invoicing.vercel.app/api/webhook/stripe`
+   — use the **stable production domain**, never a hashed deployment URL (those are blocked by Vercel Deployment Protection and change on every deploy)
+3. Select the `checkout.session.completed` event
+4. Copy the endpoint's **Signing secret** into the `STRIPE_WEBHOOK_SECRET` environment variable on Vercel
+
+To verify the endpoint is reachable:
+
+```bash
+curl -X POST https://next-15-invoicing.vercel.app/api/webhook/stripe
+# expect: 400 "Webhook Error: No stripe-signature header value was provided."
+```
+
+---
+
+## 🌐 Deployment (Vercel)
+
+The app deploys to Vercel. Environment variables must exist in the **Production** environment before the build (all `NEXT_PUBLIC_*` values are inlined at build time).
+
+To upload all env vars from `.env.local` and redeploy in one step, run **from your own terminal**:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\upload-env-to-vercel.ps1
+```
+
+> ⚠️ This script must be run by a human. The Vercel CLI detects AI coding agents and deliberately replaces secret values with `[SENSITIVE]`, which breaks the deployment.
+
+Manual alternative: Vercel Dashboard → Project → **Settings → Environment Variables**, then redeploy.
+
+Recommended project settings: **Node.js 24** (Node 20 builds are rejected by Vercel starting 2026-10-01).
+
+---
+
 ## 📜 Scripts
 
-- `npm run dev`: Starts the development server.
-- `npm run build`: Builds the application for production.
-- `npm run start`: Starts the production server.
-- `npm run lint`: Runs ESLint for code quality.
-- `npm run generate`: Generates Drizzle migrations.
-- `npm run migrate`: Applies Drizzle migrations.
+- `npm run dev` — start the development server
+- `npm run build` — build for production
+- `npm run start` — start the production server
+- `npm run lint` — run ESLint
+- `npm run generate` — generate Drizzle migrations
+- `npm run migrate` — apply Drizzle migrations
+- `npm run seed` — seed demo products
+- `scripts/upload-env-to-vercel.ps1` — upload `.env.local` to Vercel Production and redeploy (run manually)
 
 ---
 
-## 🌐 Deployment
+## 🧪 Testing Payments
 
-The easiest way to deploy your app is to use the [Vercel Platform](https://vercel.com/new).
-
-Check out the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
+Use Stripe test cards on Checkout, e.g. `4242 4242 4242 4242` with any future expiry and any CVC. After paying, confirm the webhook delivery shows **200** in Stripe Dashboard → Webhooks.
 
 ---
 
