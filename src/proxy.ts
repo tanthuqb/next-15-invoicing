@@ -1,10 +1,17 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import type { NextRequest } from "next/server";
 
-const isPublic = createRouteMatcher([
-  '/',
-  '/sign-in(.*)',
-  '/sign-up(.*)'
-])
+// Stripe calls /api/webhook/* server-to-server with no Clerk session;
+// the route protects itself via webhook signature verification instead.
+function isPublic(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  return (
+    pathname === '/' ||
+    pathname.startsWith('/sign-in') ||
+    pathname.startsWith('/sign-up') ||
+    pathname.startsWith('/api/webhook')
+  );
+}
 
 export default clerkMiddleware((async (auth, request) => {
   if (!isPublic(request)) await auth.protect()
