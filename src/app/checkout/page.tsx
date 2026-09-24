@@ -1,7 +1,3 @@
-"use client";
-
-import { useState, useEffect } from 'react';
-
 const Logo = () => (
   <div className="w-16 h-16 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center shadow-inner mb-6 mx-auto">
     <svg 
@@ -154,48 +150,33 @@ const Message = ({ message }: { message: string }) => (
   </section>
 );
 
-export default function CheckoutPage() {
-  const [message, setMessage] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [sessionId, setSessionId] = useState('');
-  const [isMounted, setIsMounted] = useState(false);
+type CheckoutSearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-  useEffect(() => {
-    setIsMounted(true);
-    // Check to see if this is a redirect back from Checkout
-    const query = new URLSearchParams(window.location.search);
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
 
-    if (query.get('success')) {
-      setSuccess(true);
-      setSessionId(query.get('session_id') ?? '');
-    }
-
-    if (query.get('canceled')) {
-      setSuccess(false);
-      setMessage(
-        "Order canceled — continue to shop around and checkout when you're ready."
-      );
-    }
-  }, []);
-
-  // Prevent Next.js hydration mismatch errors (which can sometimes cause observer errors)
-  if (!isMounted) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin shadow-lg"></div>
-      </div>
-    );
-  }
+export default async function CheckoutPage({
+  searchParams,
+}: {
+  searchParams: CheckoutSearchParams;
+}) {
+  // Stripe Checkout redirects back here with ?success=true&session_id=... or
+  // ?canceled=true, so the view is derived from the query string on the server.
+  const query = await searchParams;
+  const sessionId = first(query.session_id) ?? "";
+  const success = Boolean(first(query.success)) && sessionId !== "";
+  const canceled = Boolean(first(query.canceled));
 
   return (
     <main className="min-h-screen bg-slate-50/90 bg-linear-to-b from-indigo-50/50 to-white selection:bg-indigo-100 selection:text-indigo-900 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {!success && message === '' ? (
-          <ProductDisplay />
-        ) : success && sessionId !== '' ? (
+        {success ? (
           <SuccessDisplay sessionId={sessionId} />
+        ) : canceled ? (
+          <Message message={"Order canceled — continue to shop around and checkout when you're ready."} />
         ) : (
-          <Message message={message} />
+          <ProductDisplay />
         )}
       </div>
     </main>

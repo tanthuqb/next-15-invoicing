@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { stripe } from "@/lib/stripe";
 import { getOrCreateStripeCustomer } from "@/lib/stripe-customer";
 
-import { NextResponse , NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
@@ -13,16 +13,19 @@ export async function POST(req: NextRequest) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  let session_id: string;
+  let session_id: string | undefined;
 
   const contentType = req.headers.get("content-type") || "";
 
-  if (contentType.includes("application/x-www-form-urlencoded")) {
+  if (
+    contentType.includes("application/x-www-form-urlencoded") ||
+    contentType.includes("multipart/form-data")
+  ) {
     const formData = await req.formData();
-    session_id = formData.get("session_id") as string;
+    session_id = (formData.get("session_id") as string | null) ?? undefined;
   } else {
-    const body = await req.json();
-    session_id = body.session_id;
+    const body = await req.json().catch(() => ({}));
+    session_id = body?.session_id;
   }
 
   let customer: string | undefined;
@@ -49,7 +52,7 @@ export async function POST(req: NextRequest) {
     customer = await getOrCreateStripeCustomer(userId);
   }
 
-  const returnUrl = req.headers.get("origin") || "http://localhost:3000";
+  const returnUrl = `${req.headers.get("origin") || req.nextUrl.origin}/dashboard`;
 
   try {
     const portalSession = await stripe.billingPortal.sessions.create({

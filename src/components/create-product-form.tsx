@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect } from "react";
 import { createProductAction } from "@/app/actions/product.action";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,14 +14,13 @@ import {
 } from "@/components/ui/dialog";
 
 export function CreateProductForm() {
-  const [state, formAction] = useActionState(createProductAction as any, null as any);
-  const [open, setOpen] = useState(true);
+  const [state, formAction] = useActionState(createProductAction, null);
 
   useEffect(() => {
     if (state?.success) {
-      // We could close the dialog here if we had a way to control it from here
-      // For now, just show success in the UI or redirect
-      window.location.reload(); // Refresh to show new product
+      // Reload so the server-rendered products table picks up the new row
+      // (this also closes the dialog).
+      window.location.reload();
     }
   }, [state]);
 
@@ -36,7 +35,7 @@ export function CreateProductForm() {
       <form action={formAction} className="space-y-4 pt-4">
         {state && !state.success && (
           <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-xs">
-            {state.error || "An error occurred."}
+            {state.error}
           </div>
         )}
         <div className="grid gap-2">

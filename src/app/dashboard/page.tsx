@@ -70,7 +70,7 @@ export default async function DashBoard() {
                         {new Date(result.createTs).toLocaleDateString()}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-lef p-0">
+                    <TableCell className="text-left p-0">
                       <Link href={`/invoices/${result.id}`} className="p-4 font-semibold">
                         Philip. Dr
                       </Link>

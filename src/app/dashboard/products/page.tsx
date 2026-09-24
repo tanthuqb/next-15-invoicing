@@ -12,20 +12,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { SubmitButton } from "@/components/ui/submitbutton";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { PlusCircle, ShoppingCart } from "lucide-react";
-import { createProductAction } from "@/app/actions/product.action";
 import { buyProductAction } from "@/app/actions/buy.action";
 import { CreateProductForm } from "@/components/create-product-form";
 

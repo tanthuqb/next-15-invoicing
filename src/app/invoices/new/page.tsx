@@ -9,8 +9,6 @@ import { SyntheticEvent, useState } from "react"
 import Form from "next/form";
 import Container from "@/components/container"
 
-export const dynamic = 'force-dynamic';
-
 export default function Page() {
   const [state, setstate] = useState('ready')
 

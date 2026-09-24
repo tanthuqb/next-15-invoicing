@@ -50,3 +50,10 @@ next-env.d.ts
 # AI agent tooling caches
 /.agents/
 skills-lock.json
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.clerk/

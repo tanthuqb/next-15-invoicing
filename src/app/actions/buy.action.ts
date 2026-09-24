@@ -20,7 +20,9 @@ export async function buyProductAction(formData: FormData) {
   }
   
   const headersList = await headers();
-  const origin = headersList.get("origin") || "http://localhost:3000";
+  const host = headersList.get("x-forwarded-host") ?? headersList.get("host");
+  const proto = headersList.get("x-forwarded-proto") ?? "http";
+  const origin = headersList.get("origin") || (host ? `${proto}://${host}` : "http://localhost:3000");
 
   // Payment-mode sessions default to customer_creation: 'if_required', which
   // leaves session.customer null and breaks the billing portal. Attach the
@@ -38,6 +40,7 @@ export async function buyProductAction(formData: FormData) {
     ],
     mode: 'payment', // use payment for one-time product, subscription for recurring
     success_url: `${origin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/dashboard/products`,
     metadata: {
       userId,
     },

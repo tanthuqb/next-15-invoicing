@@ -14,7 +14,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ invoic
   const { invoiceId: invoiceIdParam } = await params;
   const invoiceId = parseInt(invoiceIdParam, 10);
   if (isNaN(invoiceId)) {
-    throw new Error("invalid Invoice Id");
+    notFound();
   }
 
   const [result] = await db.select()
@@ -29,9 +29,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ invoic
     notFound();
   }
   return (
-    <main className="h-full w-full max-w-5xl max-auto my-12 mx-20">
+    <main className="h-full w-full max-w-5xl mx-auto my-12 px-4">
       <div className="flex justify-between mb-8">
-        <h1 className="flex items-center gap-4 text-3xl font-semibold">Invoices {invoiceId}
+        <h1 className="flex items-center gap-4 text-3xl font-semibold">Invoice {invoiceId}
           <Badge className={
             cn("rounded-full capitalize",
               result.status === 'open' && 'bg-blue-500',
@@ -55,20 +55,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ invoic
       </h2>
       <ul className="grid gap-2">
         <li className="flex gap-4">
-          <strong className="block w-28 flex-shrink-0 font-medium text-sm">InvoiceID</strong>
+          <strong className="block w-28 shrink-0 font-medium text-sm">Invoice ID</strong>
           <span>{result.id}</span>
         </li>
         <li className="flex gap-4">
-          <strong className="block w-28 flex-shrink-0 font-medium text-sm">Date</strong>
+          <strong className="block w-28 shrink-0 font-medium text-sm">Date</strong>
           <span>{new Date(result.createTs).toLocaleString()}</span>
-        </li>
-        <li className="flex gap-4">
-          <strong className="block w-28 flex-shrink-0 font-medium text-sm">InvoiceID</strong>
-          <span>{result.id}</span>
-        </li>
-        <li className="flex gap-4">
-          <strong className="block w-28 flex-shrink-0 font-medium text-sm">InvoiceID</strong>
-          <span>{result.id}</span>
         </li>
       </ul>
     </main>
