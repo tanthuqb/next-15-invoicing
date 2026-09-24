@@ -8,7 +8,13 @@ export const Invoices = pgTable('invoices', {
   value: integer('value').notNull(),
   description: text('description').notNull(),
   userId: text('userId').notNull(),
-  status: statusEnum('status').notNull()
+  status: statusEnum('status').notNull(),
+  // Billing details. Nullable on purpose: invoices created before these
+  // columns existed have no real name/email, and inventing a placeholder
+  // would be fake data. New invoices always set both (validated in
+  // createAction / src/lib/invoice-input.ts).
+  name: text('name'),
+  email: text('email'),
 })
 
 export const Products = pgTable('products', {

@@ -22,13 +22,16 @@ test("dashboard lists invoices and links to the main flows", async ({ page }) =>
   await expect(page.getByRole("link", { name: "Checkout" })).toHaveAttribute("href", "/checkout");
 });
 
-test("create invoice stores the exact amount and shows it on the dashboard", async ({ page }) => {
-  const description = `E2E invoice ${Date.now()}`;
+test("create invoice stores the amount and billing details and shows them on the dashboard", async ({ page }) => {
+  const stamp = Date.now();
+  const description = `E2E invoice ${stamp}`;
+  const billingName = `E2E Customer ${stamp}`;
+  const billingEmail = `e2e+clerk_test+${stamp}@example.com`;
 
   await page.goto("/invoices/new");
   await expect(page.getByRole("heading", { name: "Create Invoice" })).toBeVisible();
-  await page.getByLabel("Billing Name").fill("E2E Customer");
-  await page.getByLabel("Billing Email").fill("e2e+clerk_test@example.com");
+  await page.getByLabel("Billing Name").fill(`  ${billingName}  `); // trimmed server-side
+  await page.getByLabel("Billing Email").fill(billingEmail);
   // 19.99 * 100 is 1998.999... in floating point; must be stored as 1999 cents.
   await page.getByLabel("Value").fill("19.99");
   await page.getByLabel("Description").fill(description);
@@ -40,9 +43,43 @@ test("create invoice stores the exact amount and shows it on the dashboard", asy
   await expect(page.getByText("$19.99")).toBeVisible();
   await expect(page.getByText(description)).toBeVisible();
   await expect(page.getByText("open", { exact: true })).toBeVisible();
+  await expect(page.getByText(billingName, { exact: true })).toBeVisible();
+  await expect(page.getByText(billingEmail, { exact: true })).toBeVisible();
 
   await page.goto("/dashboard");
-  await expect(page.locator(`a[href="/invoices/${invoiceId}"]`).first()).toBeVisible();
+  const row = page.getByRole("row").filter({ has: page.locator(`a[href="/invoices/${invoiceId}"]`) });
+  await expect(row).toHaveCount(1);
+  await expect(row.getByRole("cell").nth(1)).toHaveText(billingName);
+  await expect(row.getByRole("cell").nth(2)).toHaveText(billingEmail);
+  await expect(row).toContainText("$19.99");
+});
+
+test("create invoice rejects an invalid billing email without saving", async ({ page }) => {
+  const description = `E2E invalid email ${Date.now()}`;
+  const invoiceRows = page.locator("tbody tr");
+
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
+  const rowsBefore = await invoiceRows.count();
+
+  await page.goto("/invoices/new");
+  await page.getByLabel("Billing Name").fill("E2E Customer");
+  // Passes the browser's type="email" check but not the server's validation.
+  await page.getByLabel("Billing Email").fill("someone@localhost");
+  await page.getByLabel("Value").fill("5");
+  await page.getByLabel("Description").fill(description);
+  await page.getByRole("button", { name: "Submit" }).click();
+
+  await expect(page.getByText("Enter a valid billing email address.")).toBeVisible();
+  await expect(page).toHaveURL(/\/invoices\/new$/);
+  await expect(page.getByLabel("Billing Email")).toHaveAttribute("aria-invalid", "true");
+  // The submitted values are kept so the user can fix the one bad field.
+  await expect(page.getByLabel("Billing Name")).toHaveValue("E2E Customer");
+  await expect(page.getByLabel("Description")).toHaveValue(description);
+
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { name: "Invoices" })).toBeVisible();
+  await expect(invoiceRows).toHaveCount(rowsBefore);
 });
 
 test("unknown or malformed invoice ids render 404", async ({ page }) => {

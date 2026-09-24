@@ -27,6 +27,11 @@ export default defineConfig({
   },
   projects: [
     {
+      // Pure logic tests: no browser, no auth, no database.
+      name: "unit",
+      testMatch: /\.unit\.spec\.ts$/,
+    },
+    {
       name: "setup",
       testMatch: /global\.setup\.ts/,
     },

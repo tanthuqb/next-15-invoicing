@@ -98,6 +98,15 @@ A professional, full-stack invoicing application built with **Next.js 16.3** and
    npm run migrate    # applies src/db/migrations to DATABASE_URL
    ```
 
+   > **Upgrading an existing database:** migration `0004_invoice_billing_details` adds the nullable `name` and `email` columns to `invoices`:
+   >
+   > ```sql
+   > ALTER TABLE "invoices" ADD COLUMN "name" text;
+   > ALTER TABLE "invoices" ADD COLUMN "email" text;
+   > ```
+   >
+   > Apply it with `npm run migrate` (recommended: it also records the migration in drizzle's journal table), **or** paste the two statements above into the Supabase SQL editor — but then `npm run migrate` will try to add the columns again later and fail, so prefer one method consistently. Existing rows keep `NULL` (shown as "—"). The app tolerates the columns being absent (it logs a warning and falls back to the old columns), so deploying the code before the migration does not break the dashboard, but billing details are not saved until it is applied.
+
 5. **(Optional) Seed the subscription plans:**
 
    ```bash
@@ -132,7 +141,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 Authentication is enforced by `clerkMiddleware` in `src/proxy.ts` (Next.js 16 renamed `middleware.ts` to `proxy.ts`). Everything except `/`, `/sign-in`, `/sign-up` and `/api/webhook/*` requires a session; the `/api/webhook/stripe/session/*` handlers check the Clerk session themselves.
 
-> **Known limitation:** the "Billing Name" and "Billing Email" fields on `/invoices/new` are not stored yet (the `invoices` table has no columns for them), and the dashboard's Customer/Email columns show placeholder values. Persisting them needs a schema migration.
+Invoices store the billing **name** and **email** entered on `/invoices/new` (validated server-side: trimmed, required, name ≤ 100 chars, email ≤ 254 chars and a valid address; errors are shown next to the field). The dashboard and invoice page show them; invoices created before these columns existed show "—".
 
 ---
 
@@ -230,7 +239,8 @@ Projects:
 
 - **setup** (`e2e/global.setup.ts`): `clerkSetup()` from `@clerk/testing/playwright` fetches a Testing Token (bypasses Clerk bot protection), then signs the E2E user in with `clerk.signIn({ page, signInParams: { strategy: "password", identifier, password } })` and saves the session to `playwright/.clerk/user.json` (git-ignored).
 - **public** (`e2e/public.spec.ts`): the landing, sign-in and sign-up pages render; `/dashboard`, `/dashboard/products`, `/invoices/new`, `/invoices/1` and `/checkout` redirect to `/sign-in`; the webhook returns 400 without a signature and with an invalid one; the checkout and portal session routes return 401 without a session.
-- **authenticated** (`e2e/authenticated.spec.ts`): dashboard, creating an invoice (amount stored to the cent), 404 for unknown invoices, the products page, creating a product (synced to Stripe), **Buy** and **Subscribe** redirecting to `checkout.stripe.com`, and the canceled-checkout message.
+- **unit** (`e2e/*.unit.spec.ts`): no browser, auth or database — invoice form validation, and the invoice data layer against a stubbed `pg` driver (including the fallback used before migration 0004 is applied).
+- **authenticated** (`e2e/authenticated.spec.ts`): dashboard, creating an invoice (amount stored to the cent; billing name/email shown on the invoice page and dashboard), server-side rejection of an invalid billing email, 404 for unknown invoices, the products page, creating a product (synced to Stripe), **Buy** and **Subscribe** redirecting to `checkout.stripe.com`, and the canceled-checkout message.
 
 Authenticated tests need a password user in your Clerk **development** instance:
 

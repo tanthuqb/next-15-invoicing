@@ -1,8 +1,7 @@
 import { Badge } from "@/components/ui/badge";
-import { db } from "@/db";
-import { Invoices } from "@/db/schema";
+import { getInvoice } from "@/db/invoices";
+import { displayOrDash } from "@/lib/invoice-input";
 import { cn } from "@/lib/utils";
-import { eq, and } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 
@@ -17,14 +16,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ invoic
     notFound();
   }
 
-  const [result] = await db.select()
-    .from(Invoices)
-    .where(
-      and(
-        eq(Invoices.id, invoiceId),
-        eq(Invoices.userId, userId)
-      ))
-    .limit(1);
+  const result = await getInvoice(userId, invoiceId);
   if (!result) {
     notFound();
   }
@@ -61,6 +53,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ invoic
         <li className="flex gap-4">
           <strong className="block w-28 shrink-0 font-medium text-sm">Date</strong>
           <span>{new Date(result.createTs).toLocaleString()}</span>
+        </li>
+        <li className="flex gap-4">
+          <strong className="block w-28 shrink-0 font-medium text-sm">Billing Name</strong>
+          <span>{displayOrDash(result.name)}</span>
+        </li>
+        <li className="flex gap-4">
+          <strong className="block w-28 shrink-0 font-medium text-sm">Billing Email</strong>
+          <span>{displayOrDash(result.email)}</span>
         </li>
       </ul>
     </main>
