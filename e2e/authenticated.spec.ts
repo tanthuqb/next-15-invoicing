@@ -156,8 +156,25 @@ test.describe("subscription checkout", () => {
     await page.waitForURL(STRIPE_CHECKOUT_URL, { timeout: 60_000 });
   });
 
-  test("canceled checkout shows the cancel message", async ({ page }) => {
+  test("canceled checkout shows the cancel message and a way back", async ({ page }) => {
     await page.goto("/checkout?canceled=true");
     await expect(page.getByText(/Order canceled/)).toBeVisible();
+    await page.getByRole("link", { name: "Back to plans" }).click();
+    await expect(page).toHaveURL(/\/checkout$/);
+    await expect(page.getByRole("heading", { name: "Choose Your Plan" })).toBeVisible();
+  });
+
+  test("success page distinguishes a one-time purchase from a subscription", async ({ page }) => {
+    // The page derives its copy from the query string; no Stripe call is made
+    // until "Manage Billing Information" is clicked.
+    await page.goto("/checkout?success=true&session_id=cs_test_e2e_placeholder");
+    await expect(page.getByRole("heading", { name: "Subscription Successful!" })).toBeVisible();
+
+    await page.goto("/checkout?success=true&purchase=product&session_id=cs_test_e2e_placeholder");
+    await expect(page.getByRole("heading", { name: "Payment Successful!" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Back to products" })).toHaveAttribute(
+      "href",
+      "/dashboard/products",
+    );
   });
 });

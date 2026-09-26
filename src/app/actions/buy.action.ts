@@ -39,7 +39,9 @@ export async function buyProductAction(formData: FormData) {
       },
     ],
     mode: 'payment', // use payment for one-time product, subscription for recurring
-    success_url: `${origin}/checkout?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    // `purchase=product` lets the checkout page show a one-time purchase
+    // confirmation instead of the subscription copy.
+    success_url: `${origin}/checkout?success=true&purchase=product&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/dashboard/products`,
     metadata: {
       userId,

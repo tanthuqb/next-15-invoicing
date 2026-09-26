@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const Logo = () => (
   <div className="w-16 h-16 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-center shadow-inner mb-6 mx-auto">
     <svg 
@@ -90,7 +92,21 @@ const ProductDisplay = () => (
   </section>
 );
 
-const SuccessDisplay = ({ sessionId }: { sessionId: string }) => {
+type PurchaseKind = "subscription" | "product";
+
+const successCopy: Record<PurchaseKind, { title: string; body: string }> = {
+  subscription: {
+    title: "Subscription Successful!",
+    body: "Welcome aboard. Your subscription is now active and ready to use.",
+  },
+  product: {
+    title: "Payment Successful!",
+    body: "Thanks for your purchase. Your payment has been received.",
+  },
+};
+
+const SuccessDisplay = ({ sessionId, kind }: { sessionId: string; kind: PurchaseKind }) => {
+  const copy = successCopy[kind];
   return (
     <section className="flex flex-col items-center justify-center min-h-[70vh] p-4 text-center">
       <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-xl border border-gray-100 max-w-md w-full">
@@ -107,11 +123,20 @@ const SuccessDisplay = ({ sessionId }: { sessionId: string }) => {
           </div>
         </div>
         
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">Subscription Successful!</h3>
+        <h3 className="text-2xl font-bold text-gray-900 mb-2">{copy.title}</h3>
         <p className="text-gray-500 mb-8 border-b border-gray-100 pb-8 text-sm">
-          Welcome aboard. Your subscription is now active and ready to use.
+          {copy.body}
         </p>
-        
+
+        {kind === "product" && (
+          <Link
+            href="/dashboard/products"
+            className="block w-full mb-3 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-semibold py-4 px-6 rounded-2xl transition-all duration-200"
+          >
+            Back to products
+          </Link>
+        )}
+
         <form action="/api/webhook/stripe/session/portal" method="POST">
           <input
             type="hidden"
@@ -146,6 +171,20 @@ const Message = ({ message }: { message: string }) => (
         </svg>
       </div>
       <p className="font-semibold text-red-800 leading-relaxed text-lg">{message}</p>
+      <div className="flex flex-wrap justify-center gap-3 mt-2">
+        <Link
+          href="/checkout"
+          className="bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3 px-5 rounded-2xl transition-all duration-200"
+        >
+          Back to plans
+        </Link>
+        <Link
+          href="/dashboard"
+          className="bg-white border border-gray-200 hover:bg-gray-50 text-gray-800 font-semibold py-3 px-5 rounded-2xl transition-all duration-200"
+        >
+          Back to dashboard
+        </Link>
+      </div>
     </div>
   </section>
 );
@@ -167,12 +206,14 @@ export default async function CheckoutPage({
   const sessionId = first(query.session_id) ?? "";
   const success = Boolean(first(query.success)) && sessionId !== "";
   const canceled = Boolean(first(query.canceled));
+  // One-time product purchases (see buy.action.ts) add `purchase=product`.
+  const kind: PurchaseKind = first(query.purchase) === "product" ? "product" : "subscription";
 
   return (
     <main className="min-h-screen bg-slate-50/90 bg-linear-to-b from-indigo-50/50 to-white selection:bg-indigo-100 selection:text-indigo-900 font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {success ? (
-          <SuccessDisplay sessionId={sessionId} />
+          <SuccessDisplay sessionId={sessionId} kind={kind} />
         ) : canceled ? (
           <Message message={"Order canceled — continue to shop around and checkout when you're ready."} />
         ) : (
