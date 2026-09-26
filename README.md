@@ -6,6 +6,18 @@ A professional, full-stack invoicing application built with **Next.js 16.3** and
 
 ---
 
+## 📸 Screenshots
+
+| Dashboard | Create invoice | Invoice detail |
+|-----------|----------------|----------------|
+| ![Dashboard](./screenshots/dashboard.png) | ![Create invoice](./screenshots/create-invoice.png) | ![Invoice detail](./screenshots/invoice-detail.png) |
+
+| Products synced to Stripe | Subscription plans (Stripe Checkout) |
+|---------------------------|--------------------------------------|
+| ![Products](./screenshots/products.png) | ![Pricing](./screenshots/pricing.png) |
+
+---
+
 ## ✨ Features
 
 - **📊 Dashboard:** Overview of your invoices and recent activity.
